@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharmacy Performance Dashboard</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f3f6fa;
+    color: #243247;
+}
+h1, h2 {
+    color: #174a7e;
+}
+.container {
+    max-width: 1000px;
+    margin: auto;
+}
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px #0001;
+}
+.value {
+    font-size: 25px;
+    font-weight: bold;
+    color: #16845b;
+}
+section {
+    background: white;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 12px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+th {
+    background: #174a7e;
+    color: white;
+}
+input, select, button {
+    padding: 10px;
+    margin: 5px 0;
+}
+button {
+    background: #174a7e;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+.note {
+    color: #555;
+    font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>Pharmacy Performance Dashboard</h1>
+<p>Sales, revenue, product mix and profitability analysis.</p>
+
+<p class="note">
+Demonstration data only. Replace it with the supplied
+Synthetic Pharmacy Sales dataset before final submission.
+</p>
+
+<section>
+<h2>Filter Data</h2>
+
+<label>Product Category:</label>
+<select id="category" onchange="updateDashboard()">
+<option value="All">All Categories</option>
+<option value="Branded">Branded</option>
+<option value="Generic">Generic</option>
+</select>
+
+<label>Search Product:</label>
+<input id="search" placeholder="Enter product name"
+oninput="updateDashboard()">
+</section>
+
+<div class="cards">
+<div class="card">
+<h3>Total Revenue</h3>
+<div class="value" id="revenue">₹0</div>
+</div>
+
+<div class="card">
+<h3>Total Cost</h3>
+<div class="value" id="cost">₹0</div>
+</div>
+
+<div class="card">
+<h3>Gross Profit</h3>
+<div class="value" id="profit">₹0</div>
+</div>
+
+<div class="card">
+<h3>Profit Margin</h3>
+<div class="value" id="margin">0%</div>
+</div>
+
+<div class="card">
+<h3>Units Sold</h3>
+<div class="value" id="units">0</div>
+</div>
+</div>
+
+<section>
+<h2>Product Performance</h2>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Category</th>
+<th>Quantity</th>
+<th>Revenue</th>
+<th>Cost</th>
+<th>Profit</th>
+<th>Margin</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+</section>
+
+<section>
+<h2>Branded vs Generic Products</h2>
+<div id="comparison"></div>
+</section>
+
+<section>
+<h2>One-Page Performance Summary</h2>
+<div id="summary"></div>
+</section>
+
+</div>
+
+<script>
+// Illustrative data only.
+// Replace these rows with the supplied task dataset.
+const sales = [
+ {product:"Product A",category:"Branded",quantity:100,price:50,cost:30,date:"2026-01-01"},
+ {product:"Product B",category:"Generic",quantity:150,price:25,cost:12,date:"2026-01-02"},
+ {product:"Product C",category:"Branded",quantity:80,price:100,cost:65,date:"2026-02-01"},
+ {product:"Product D",category:"Generic",quantity:200,price:20,cost:9,date:"2026-02-02"},
+ {product:"Product E",category:"Branded",quantity:60,price:120,cost:75,date:"2026-03-01"},
+ {product:"Product F",category:"Generic",quantity:180,price:30,cost:15,date:"2026-03-02"}
+];
+
+function money(value) {
+    return "₹" + value.toLocaleString("en-IN", {
+        maximumFractionDigits: 2
+    });
+}
+
+function updateDashboard() {
+    const category = document.getElementById("category").value;
+    const search = document.getElementById("search").value.toLowerCase();
+
+    const filtered = sales.filter(item =>
+        (category === "All" || item.category === category) &&
+        item.product.toLowerCase().includes(search)
+    );
+
+    let revenue = 0, cost = 0, units = 0;
+    let body = "";
+
+    filtered.forEach(item => {
+        const itemRevenue = item.quantity * item.price;
+        const itemCost = item.quantity * item.cost;
+        const profit = itemRevenue - itemCost;
+        const margin = itemRevenue ? profit / itemRevenue * 100 : 0;
+
+        revenue += itemRevenue;
+        cost += itemCost;
+        units += item.quantity;
+
+        body += `<tr>
+        <td>${item.product}</td>
+        <td>${item.category}</td>
+        <td>${item.quantity}</td>
+        <td>${money(itemRevenue)}</td>
+        <td>${money(itemCost)}</td>
+        <td>${money(profit)}</td>
+        <td>${margin.toFixed(1)}%</td>
+        </tr>`;
+    });
+
+    const profit = revenue - cost;
+    const margin = revenue ? profit / revenue * 100 : 0;
+
+    document.getElementById("revenue").textContent = money(revenue);
+    document.getElementById("cost").textContent = money(cost);
+    document.getElementById("profit").textContent = money(profit);
+    document.getElementById("margin").textContent = margin.toFixed(1) + "%";
+    document.getElementById("units").textContent = units;
+    document.getElementById("tableBody").innerHTML =
+        body || "<tr><td colspan='7'>No matching products</td></tr>";
+
+    let comparison = "";
+
+    ["Branded", "Generic"].forEach(type => {
+        const items = filtered.filter(item => item.category === type);
+        const rev = items.reduce((sum, item) =>
+            sum + item.quantity * item.price, 0);
+        const cst = items.reduce((sum, item) =>
+            sum + item.quantity * item.cost, 0);
+        const prof = rev - cst;
+        const mar = rev ? prof / rev * 100 : 0;
+
+        comparison += `<p><strong>${type}:</strong>
+        Revenue ${money(rev)} | Profit ${money(prof)} |
+        Margin ${mar.toFixed(1)}%</p>`;
+    });
+
+    document.getElementById("comparison").innerHTML =
+        comparison || "No data available.";
+
+    document.getElementById("summary").innerHTML =
+        `<p>Total revenue is <strong>${money(revenue)}</strong>,
+        with gross profit of <strong>${money(profit)}</strong>
+        and a gross profit margin of <strong>${margin.toFixed(1)}%</strong>.</p>
+        <p>A total of <strong>${units}</strong> units were sold
+        across ${filtered.length} products in the current view.</p>
+        <p>Use the category filter to compare branded and generic
+        product performance. Review stock levels and product costs
+        before making purchasing decisions.</p>`;
+}
+
+updateDashboard();
+</script>
+
+</body>
+</html>
