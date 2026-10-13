@@ -130,13 +130,13 @@ oninput="updateDashboard()">
 <table>
 <thead>
 <tr>
-<th>Product</th>
-<th>Category</th>
-<th>Quantity</th>
-<th>Revenue</th>
-<th>Cost</th>
-<th>Profit</th>
-<th>Margin</th>
+  <th>Product</th>
+  <th>Category</th>
+  <th>Units Sold</th>
+  <th>Revenue</th>
+  <th>Brand Status</th>
+  <th>Store</th>
+  <th>Date</th>
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
@@ -245,6 +245,216 @@ function updateDashboard() {
         <p>Use the category filter to compare branded and generic
         product performance. Review stock levels and product costs
         before making purchasing decisions.</p>`;
+}
+
+updateDashboard();
+<script>
+const sales = [
+  {
+    id: "TXN-801",
+    date: "2026-06-01",
+    product: "Paracetamol 650mg",
+    category: "Analgesic",
+    quantity: 150,
+    price: 15,
+    revenue: 2250,
+    store: "Mumbai North",
+    status: "Generic"
+  },
+  {
+    id: "TXN-802",
+    date: "2026-06-01",
+    product: "Amoxicillin 500mg",
+    category: "Antibiotic",
+    quantity: 45,
+    price: 85,
+    revenue: 3825,
+    store: "Delhi Central",
+    status: "Branded"
+  },
+  {
+    id: "TXN-803",
+    date: "2026-06-02",
+    product: "Metformin 500mg",
+    category: "Antidiabetic",
+    quantity: 120,
+    price: 25,
+    revenue: 3000,
+    store: "Bangalore East",
+    status: "Generic"
+  },
+  {
+    id: "TXN-804",
+    date: "2026-06-02",
+    product: "Atorvastatin 10mg",
+    category: "Cardiovascular",
+    quantity: 80,
+    price: 110,
+    revenue: 8800,
+    store: "Mumbai North",
+    status: "Branded"
+  },
+  {
+    id: "TXN-805",
+    date: "2026-06-03",
+    product: "Pantoprazole 40mg",
+    category: "Gastrointestinal",
+    quantity: 95,
+    price: 45,
+    revenue: 4275,
+    store: "Hyderabad Central",
+    status: "Generic"
+  },
+  {
+    id: "TXN-806",
+    date: "2026-06-03",
+    product: "Azithromycin 500mg",
+    category: "Antibiotic",
+    quantity: 60,
+    price: 130,
+    revenue: 7800,
+    store: "Delhi Central",
+    status: "Branded"
+  },
+  {
+    id: "TXN-807",
+    date: "2026-06-04",
+    product: "Cetirizine 10mg",
+    category: "Antihistamine",
+    quantity: 200,
+    price: 12,
+    revenue: 2400,
+    store: "Bangalore East",
+    status: "Generic"
+  },
+  {
+    id: "TXN-808",
+    date: "2026-06-04",
+    product: "Amlodipine 5mg",
+    category: "Cardiovascular",
+    quantity: 110,
+    price: 30,
+    revenue: 3300,
+    store: "Mumbai North",
+    status: "Generic"
+  },
+  {
+    id: "TXN-809",
+    date: "2026-06-05",
+    product: "Ibuprofen 400mg",
+    category: "Analgesic",
+    quantity: 130,
+    price: 22,
+    revenue: 2860,
+    store: "Hyderabad Central",
+    status: "Generic"
+  },
+  {
+    id: "TXN-810",
+    date: "2026-06-05",
+    product: "Vitamin D3 60k",
+    category: "Supplement",
+    quantity: 175,
+    price: 90,
+    revenue: 15750,
+    store: "Delhi Central",
+    status: "Branded"
+  }
+];
+
+function updateDashboard() {
+  const category =
+    document.getElementById("category").value;
+
+  const search =
+    document.getElementById("search").value.toLowerCase();
+
+  const filtered = sales.filter(item =>
+    (category === "All" || item.status === category) &&
+    (
+      item.product.toLowerCase().includes(search) ||
+      item.category.toLowerCase().includes(search) ||
+      item.store.toLowerCase().includes(search)
+    )
+  );
+
+  const totalRevenue = filtered.reduce(
+    (sum, item) => sum + item.revenue, 0
+  );
+
+  const totalUnits = filtered.reduce(
+    (sum, item) => sum + item.quantity, 0
+  );
+
+  const money = value =>
+    "₹" + value.toLocaleString("en-IN");
+
+  document.getElementById("revenue").textContent =
+    money(totalRevenue);
+
+  document.getElementById("units").textContent =
+    totalUnits.toLocaleString("en-IN");
+
+  // Cost data was not supplied, so profit and margin
+  // cannot be calculated reliably.
+  document.getElementById("cost").textContent =
+    "Not provided";
+
+  document.getElementById("profit").textContent =
+    "Not calculable";
+
+  document.getElementById("margin").textContent =
+    "Not calculable";
+
+  document.getElementById("tableBody").innerHTML =
+    filtered.map(item => `
+      <tr>
+        <td>${item.product}</td>
+        <td>${item.category}</td>
+        <td>${item.quantity}</td>
+        <td>${money(item.revenue)}</td>
+        <td>${item.status}</td>
+        <td>${item.store}</td>
+        <td>${item.date}</td>
+      </tr>
+    `).join("") ||
+    "<tr><td colspan='7'>No matching records</td></tr>";
+
+  const comparison = ["Branded", "Generic"].map(status => {
+    const items = filtered.filter(
+      item => item.status === status
+    );
+
+    const revenue = items.reduce(
+      (sum, item) => sum + item.revenue, 0
+    );
+
+    const units = items.reduce(
+      (sum, item) => sum + item.quantity, 0
+    );
+
+    return `
+      <p><strong>${status} products:</strong>
+      Revenue: ${money(revenue)} |
+      Units sold: ${units}</p>
+    `;
+  }).join("");
+
+  document.getElementById("comparison").innerHTML =
+    comparison;
+
+  document.getElementById("summary").innerHTML = `
+    <p><strong>Total transactions:</strong> ${filtered.length}</p>
+    <p><strong>Total units sold:</strong> ${totalUnits}</p>
+    <p><strong>Total revenue:</strong> ${money(totalRevenue)}</p>
+    <p>Revenue is calculated using the supplied dataset.
+    Unit cost was not provided; therefore, profit and
+    profit margin cannot be determined.</p>
+    <p>Branded and generic products can be compared using
+    their total revenue and units sold. Stock quantities
+    were not provided, so stock priorities require
+    additional inventory data.</p>
+  `;
 }
 
 updateDashboard();
